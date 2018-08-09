@@ -1,0 +1,47 @@
+---
+- name: Generate LSYS INTERCONNECT and ROUTER configurations
+  hosts: localhost
+
+  roles:
+    - srx
+    - interconnect
+    - ext-router
+    - int-router
+
+- name: Build SRX Configuration
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+
+  - name: Assembling SRX Configuration Fragments
+    assemble: src={{playbook_dir}}/Configs/frags dest={{playbook_dir}}/Configs/srx.set
+
+
+- name: Push Junos Configs
+  hosts: devices
+  roles:
+  - Juniper.junos
+  connection: local
+  gather_facts: no
+
+  vars_prompt:
+  - name: USERNAME
+    prompt: User name
+    private: no
+  - name: DEVICE_PASSWORD
+    prompt: Device Password
+    private: yes
+
+  tasks:
+  - name: Checking NETCONF Connectivity
+    wait_for: host={{ junos_host }} port=830 timeout=5
+
+  - name: Push Configurations
+    junos_install_config:
+      user={{ USERNAME }}
+      passwd={{ DEVICE_PASSWORD }}
+      host={{ junos_host }}
+      file=Configs/{{ inventory_hostname }}.set
+      overwrite=false
+      comment="Configured by LSYS-Config-Gen"

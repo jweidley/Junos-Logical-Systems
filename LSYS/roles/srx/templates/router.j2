@@ -1,0 +1,75 @@
+set system security-profile bronze policy maximum 500
+set system security-profile bronze policy reserved 100
+set system security-profile bronze zone maximum 50
+set system security-profile bronze zone reserved 10
+set system security-profile bronze flow-session maximum 1000
+set system security-profile bronze flow-session reserved 500
+set system security-profile bronze nat-source-pool maximum 50
+set system security-profile bronze nat-source-pool reserved 10
+set system security-profile bronze nat-pat-address maximum 50
+set system security-profile bronze nat-pat-address reserved 10
+set system security-profile bronze nat-source-rule maximum 50
+set system security-profile bronze nat-source-rule reserved 10
+set system security-profile bronze nat-rule-referenced-prefix maximum 20
+set system security-profile bronze nat-rule-referenced-prefix reserved 10
+
+{% for zz in lsys_members %}
+
+set system security-profile bronze logical-system {{ zz.hostname }}
+set interfaces {{ zz.untrust_int }} vlan-tagging
+set interfaces {{ zz.trust_int }} vlan-tagging
+
+set logical-systems {{ zz.hostname }} interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} description {{ zz.hostname }}-untrust
+set logical-systems {{ zz.hostname }} interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} vlan-id {{ zz.untrust_vlan }} 
+set logical-systems {{ zz.hostname }} interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} family inet address {{ zz.untrust_int_ip }}/{{ zz.untrust_int_mask }} 
+
+set logical-systems {{ zz.hostname }} interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} description {{ zz.hostname }}-trust
+set logical-systems {{ zz.hostname }} interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} vlan-id {{ zz.trust_vlan }}
+set logical-systems {{ zz.hostname }} interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} family inet address {{ zz.trust_int_ip }}/{{ zz.trust_int_mask }}
+
+set logical-systems {{ zz.hostname }} routing-options static route 0.0.0.0/0 next-hop {{ zz.default_gateway }}
+
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens icmp fragment
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens icmp large
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens icmp flood
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens icmp ping-death
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens ip spoofing
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens ip unknown-protocol
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens tcp syn-fin
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens tcp tcp-no-flag
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens tcp syn-frag
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens tcp land
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens tcp winnuke
+set logical-systems {{ zz.hostname }} security screen ids-option baseline-screens udp flood
+
+set logical-systems {{ zz.hostname }} security zones security-zone untrust screen baseline-screens
+set logical-systems {{ zz.hostname }} security zones security-zone untrust host-inbound-traffic system-services ssh
+set logical-systems {{ zz.hostname }} security zones security-zone untrust host-inbound-traffic system-services ping
+set logical-systems {{ zz.hostname }} security zones security-zone untrust interfaces {{ zz.untrust_int }}.{{ zz.untrust_vlan }}
+
+set logical-systems {{ zz.hostname }} security zones security-zone trust screen baseline-screens
+set logical-systems {{ zz.hostname }} security zones security-zone trust host-inbound-traffic system-services ssh
+set logical-systems {{ zz.hostname }} security zones security-zone trust host-inbound-traffic system-services ping
+set logical-systems {{ zz.hostname }} security zones security-zone trust interfaces {{ zz.trust_int }}.{{ zz.trust_vlan }}
+
+set logical-systems {{ zz.hostname }} security policies from-zone trust to-zone untrust policy 1 match source-address any
+set logical-systems {{ zz.hostname }} security policies from-zone trust to-zone untrust policy 1 match destination-address any
+set logical-systems {{ zz.hostname }} security policies from-zone trust to-zone untrust policy 1 match application any
+set logical-systems {{ zz.hostname }} security policies from-zone trust to-zone untrust policy 1 then permit
+
+set logical-systems {{ zz.hostname }} security policies from-zone untrust to-zone trust policy 2 match source-address any
+set logical-systems {{ zz.hostname }} security policies from-zone untrust to-zone trust policy 2 match destination-address any
+set logical-systems {{ zz.hostname }} security policies from-zone untrust to-zone trust policy 2 match application any
+set logical-systems {{ zz.hostname }} security policies from-zone untrust to-zone trust policy 2 then permit
+
+set logical-systems {{ zz.hostname }} security policies default-policy deny-all
+set logical-systems {{ zz.hostname }} security policies policy-rematch
+
+set logical-systems {{ zz.hostname }} security policies global policy deny-log match source-address any
+set logical-systems {{ zz.hostname }} security policies global policy deny-log match destination-address any
+set logical-systems {{ zz.hostname }} security policies global policy deny-log match application any
+set logical-systems {{ zz.hostname }} security policies global policy deny-log then deny
+set logical-systems {{ zz.hostname }} security policies global policy deny-log then log session-init
+set logical-systems {{ zz.hostname }} security policies global policy deny-log then log session-close
+
+{% endfor %}

@@ -1,0 +1,3 @@
+---
+- name: Generate INTERNAL ROUTER configuration file
+  template: src=router.j2 dest="{{playbook_dir}}/Configs/int_router.set"

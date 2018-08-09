@@ -1,0 +1,4 @@
+[devices]
+srx            junos_host=192.168.3.104
+ext_router     junos_host=192.168.3.103
+int_router     junos_host=192.168.3.105

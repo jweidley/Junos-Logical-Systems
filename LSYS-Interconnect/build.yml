@@ -1,0 +1,30 @@
+---
+- name: Generate LSYS INTERCONNECT and ROUTER configurations
+  hosts: localhost
+  gather_facts: no
+
+  roles:
+    - srx
+    - interconnect
+    - ext-router
+    - int-router
+
+- name: Build SRX Configuration
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+
+  - name: Assembling SRX Configuration Fragments
+    assemble: src={{playbook_dir}}/Configs/frags dest={{playbook_dir}}/Configs/srx.set
+
+- name: Push Junos Configs
+  hosts: devices
+  roles:
+  - Juniper.junos
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: Checking NETCONF Connectivity
+    wait_for: host={{ junos_host }} port=830 timeout=5

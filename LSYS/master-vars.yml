@@ -1,0 +1,87 @@
+---
+#######################################################################################
+# Common Settings:
+#######################################################################################
+# None at this time
+
+#######################################################################################
+# lsys_members:
+#	This variable should contain the values necessary to create the LSYS. 
+#	Options are:
+#	- hostname: Name of the LSYS
+#	- untrust_int: The untrust firewall interface
+#	- untrust_vlan: The VLAN tag for the Untrust interface
+#	- untrust_int_ip: IP address for the untrust LSYS VLAN
+#	- untrust_int_mask: Network Mask for the untrust LSYS VLAN
+#	- default_gateway: The default gateway of the LSYS
+#	- trust_int: The trust firewall interface
+#	- trust_vlan: The VLAN tag for the trust interface
+#	- trust_int_ip: IP address for the trust LSYS VLAN
+#	- trust_int_mask: Network Mask for the trust LSYS VLAN
+#######################################################################################
+lsys_members:
+  - { hostname: lsys1, 
+      untrust_int: ge-0/0/0,
+      untrust_vlan: 101,
+      untrust_int_ip: 172.16.1.2, 
+      untrust_int_mask: 24,
+      default_gateway: 172.16.1.1,
+      trust_int: ge-0/0/1,
+      trust_vlan: 201,
+      trust_int_ip: 172.17.1.2, 
+      trust_int_mask: 24
+    }
+  - { hostname: lsys2, 
+      untrust_int: ge-0/0/0,
+      untrust_vlan: 102,
+      untrust_int_ip: 172.16.2.2, 
+      untrust_int_mask: 24,
+      default_gateway: 172.16.2.1,
+      trust_int: ge-0/0/1,
+      trust_vlan: 202,
+      trust_int_ip: 172.17.2.2, 
+      trust_int_mask: 24
+    }
+
+#######################################################################################
+#	Options are:
+#	- peer: Name of the LSYS
+#	- interface: Physical interface connecting to the SRX
+#	- user_int_net: VLAN tag for the interface
+#	- user_int_net: IP address for the connection to the SRX
+#	- user_int_mask: Network Mask for the connection to the SRX
+#	- default_gateway: Default gateway for the routing instance (should point to SRX)
+#######################################################################################
+ext_interfaces:
+  - { peer: lsys1, 
+      interface: ge-0/0/0,
+      user_vlan: 101,
+      user_int_net: 172.16.1.1, 
+      user_int_mask: 24,
+      default_gateway: 172.16.1.2
+    }
+  - { peer: lsys2, 
+      interface: ge-0/0/0,
+      user_vlan: 102,
+      user_int_net: 172.16.2.1, 
+      user_int_mask: 24,
+      default_gateway: 172.16.2.2
+    }
+
+int_interfaces:
+  - { peer: lsys1, 
+      interface: ge-0/0/1,
+      user_vlan: 201,
+      user_int_net: 172.17.1.1, 
+      user_int_mask: 24,
+      default_gateway: 172.17.1.2
+    }
+  - { peer: lsys2, 
+      interface: ge-0/0/1,
+      user_vlan: 202,
+      user_int_net: 172.17.2.1, 
+      user_int_mask: 24,
+      default_gateway: 172.17.2.2
+    }
+
+
