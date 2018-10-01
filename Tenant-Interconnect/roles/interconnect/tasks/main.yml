@@ -1,0 +1,3 @@
+---
+- name: Generate INTERCONNECT LSYS configuration file fragment
+  template: src=router.j2 dest="{{playbook_dir}}/Configs/frags/interconnect.frag"

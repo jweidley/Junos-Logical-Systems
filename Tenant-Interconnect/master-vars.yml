@@ -1,0 +1,76 @@
+---
+#######################################################################################
+# Common Settings:
+#######################################################################################
+tenant_passwd: $6$KhAyMHas$5MEgjhJp36.VdzAyQZSmd0A/PWlBTAhDGQVmpNK2rR7jFw3JMjJLyeyRmESdzAyQZSmdGEZJ1iZYn.WR.
+
+#######################################################################################
+# lsys_members:
+#	This variable should contain the values necessary to create the Tenants. 
+#	Options are:
+#	- hostname: [Root & Tenant]: Name of the Tenant
+#	- untrust_int: [Root]: The untrust firewall interface
+#	- untrust_vlan: [Root]: The VLAN tag for the Untrust interface
+#	- untrust_int_ip: [Root]: IP address for the untrust Tenant VLAN
+#	- untrust_int_mask: [Root]: Network Mask for the untrust Tenant VLAN
+#
+#	- trust_int: [Tenant]: The trust firewall interface
+#	- trust_vlan: [Tenant]: The VLAN tag for the trust interface
+#	- trust_int_ip: [Tenant]: IP address for the trust Tenant VLAN
+#	- trust_int_mask: [Tenant]: Network Mask for the trust Tenant VLAN
+#######################################################################################
+lsys_members:
+  - { hostname: root, 
+      untrust_int: ge-0/0/0,
+      untrust_vlan: 70,
+      untrust_int_ip: 192.168.70.2, 
+      untrust_int_mask: 24,
+    }
+  - { hostname: t1, 
+      trust_int: ge-0/0/1,
+      trust_vlan: 210,
+      trust_int_ip: 172.16.210.2, 
+      trust_int_mask: 24
+    }
+  - { hostname: t2, 
+      trust_int: ge-0/0/1,
+      trust_vlan: 220,
+      trust_int_ip: 172.16.220.2, 
+      trust_int_mask: 24
+    }
+
+#######################################################################################
+#	Options are:
+#	- peer: Name of the Tenant
+#	- interface: Physical interface connecting to the SRX
+#	- user_vlan: VLAN tag for the interface
+#	- user_int_net: IP address for the connection to the SRX
+#	- user_int_mask: Network Mask for the connection to the SRX
+#	- default_gateway: Default gateway for the routing instance (should point to SRX)
+#######################################################################################
+ext_interfaces:
+  - { peer: root, 
+      interface: ge-0/0/12,
+      user_vlan: 70,
+      user_int_net: 192.168.70.1, 
+      user_int_mask: 24,
+      default_gateway: 192.168.70.2
+    }
+
+int_interfaces:
+  - { peer: t1, 
+      interface: ge-0/0/13,
+      user_vlan: 210,
+      user_int_net: 172.16.210.1, 
+      user_int_mask: 24,
+      default_gateway: 172.16.210.2
+    }
+  - { peer: t2, 
+      interface: ge-0/0/13,
+      user_vlan: 220,
+      user_int_net: 172.16.220.1, 
+      user_int_mask: 24,
+      default_gateway: 172.16.220.2
+    }
+
+

@@ -1,0 +1,3 @@
+---
+- name: Generate EXTERNAL ROUTER configuration file
+  template: src=router.j2 dest="{{playbook_dir}}/Configs/ext_router.set"

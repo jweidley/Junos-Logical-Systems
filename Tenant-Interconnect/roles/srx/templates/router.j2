@@ -1,0 +1,93 @@
+set system security-profile bronze policy maximum 500
+set system security-profile bronze policy reserved 100
+set system security-profile bronze zone maximum 50
+set system security-profile bronze zone reserved 10
+set system security-profile bronze flow-session maximum 1000
+set system security-profile bronze flow-session reserved 500
+set system security-profile bronze nat-source-pool maximum 50
+set system security-profile bronze nat-source-pool reserved 10
+set system security-profile bronze nat-pat-address maximum 50
+set system security-profile bronze nat-pat-address reserved 10
+set system security-profile bronze nat-source-rule maximum 50
+set system security-profile bronze nat-source-rule reserved 10
+set system security-profile bronze nat-rule-referenced-prefix maximum 20
+set system security-profile bronze nat-rule-referenced-prefix reserved 10
+
+{% for zz in lsys_members %}
+  {% if zz.hostname == "root" %}
+    {% set start = "set" %}
+
+set interfaces {{ zz.untrust_int }} vlan-tagging
+set interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} description {{ zz.hostname }}-untrust
+set interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} vlan-id {{ zz.untrust_vlan }} 
+set interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} family inet address {{ zz.untrust_int_ip }}/{{ zz.untrust_int_mask }} 
+set security zones security-zone untrust interfaces {{ zz.untrust_int }}.{{ zz.untrust_vlan }}
+set security zones security-zone trust host-inbound-traffic protocols ospf
+set protocols ospf export generate-default
+set policy-options policy-statement generate-default term 1 from route-filter 0.0.0.0/0 exact accept
+
+  {% elif zz.hostname != "root" %}
+    {% set start = "set tenants " ~ zz.hostname %}
+
+set system login class {{ zz.hostname }}-admin tenant {{ zz.hostname }}
+set system login class {{ zz.hostname }}-admin permissions all
+set system login class {{ zz.hostname }}-admin deny-commands "(telnet)|(traceroute)|(ssh)|(show log)"
+set system login user {{ zz.hostname }}-admin class {{ zz.hostname }}-admin
+set system login user {{ zz.hostname }}-admin authentication encrypted-password "{{ tenant_passwd }}"
+
+set system login class tenant1-admin tenant {{ zz.hostname }}
+
+set interfaces {{ zz.trust_int }} vlan-tagging
+set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} description {{ zz.hostname }}-trust
+set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} vlan-id {{ zz.trust_vlan }}
+set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} family inet address {{ zz.trust_int_ip }}/{{ zz.trust_int_mask }}
+{{ start }} security zones security-zone trust interfaces {{ zz.trust_int }}.{{ zz.trust_vlan }}
+{{ start }} routing-instances {{ zz.hostname }}-main instance-type virtual-router
+{{ start }} routing-instances {{ zz.hostname }}-main interface {{ zz.trust_int}}.{{ zz.trust_vlan }}
+{{ start }} routing-instances {{ zz.hostname }}-main protocols ospf area 0.0.0.0 interface {{ zz.trust_int }}.{{ zz.trust_vlan }} passive
+
+  {% endif %}
+
+{{ start }} security screen ids-option baseline-screens icmp fragment
+{{ start }} security screen ids-option baseline-screens icmp large
+{{ start }} security screen ids-option baseline-screens icmp flood
+{{ start }} security screen ids-option baseline-screens icmp ping-death
+{{ start }} security screen ids-option baseline-screens ip spoofing
+{{ start }} security screen ids-option baseline-screens ip unknown-protocol
+{{ start }} security screen ids-option baseline-screens tcp syn-fin
+{{ start }} security screen ids-option baseline-screens tcp tcp-no-flag
+{{ start }} security screen ids-option baseline-screens tcp syn-frag
+{{ start }} security screen ids-option baseline-screens tcp land
+{{ start }} security screen ids-option baseline-screens tcp winnuke
+{{ start }} security screen ids-option baseline-screens udp flood
+
+{{ start }} security zones security-zone untrust screen baseline-screens
+{{ start }} security zones security-zone untrust host-inbound-traffic system-services ssh
+{{ start }} security zones security-zone untrust host-inbound-traffic system-services ping
+{{ start }} security zones security-zone untrust host-inbound-traffic protocols ospf
+
+{{ start }} security zones security-zone trust screen baseline-screens
+{{ start }} security zones security-zone trust host-inbound-traffic system-services ssh
+{{ start }} security zones security-zone trust host-inbound-traffic system-services ping
+
+{{ start }} security policies from-zone trust to-zone untrust policy 1 match source-address any
+{{ start }} security policies from-zone trust to-zone untrust policy 1 match destination-address any
+{{ start }} security policies from-zone trust to-zone untrust policy 1 match application any
+{{ start }} security policies from-zone trust to-zone untrust policy 1 then permit
+
+{{ start }} security policies from-zone untrust to-zone trust policy 2 match source-address any
+{{ start }} security policies from-zone untrust to-zone trust policy 2 match destination-address any
+{{ start }} security policies from-zone untrust to-zone trust policy 2 match application any
+{{ start }} security policies from-zone untrust to-zone trust policy 2 then permit
+
+{{ start }} security policies default-policy deny-all
+{{ start }} security policies policy-rematch
+
+{{ start }} security policies global policy deny-log match source-address any
+{{ start }} security policies global policy deny-log match destination-address any
+{{ start }} security policies global policy deny-log match application any
+{{ start }} security policies global policy deny-log then deny
+{{ start }} security policies global policy deny-log then log session-init
+{{ start }} security policies global policy deny-log then log session-close
+
+{% endfor %}

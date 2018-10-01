@@ -1,0 +1,35 @@
+
+set routing-instances interconnect instance-type vpls
+
+{% for zz in lsys_members %}
+  {% set rowloop = loop %}
+  {% for i in zz %}
+    {% if i == "hostname" %}
+      {% set unit = rowloop.index %}
+
+set interfaces lt-0/0/0 unit {{ unit }}0 description "interconnect-to-{{ zz.hostname }}"
+set interfaces lt-0/0/0 unit {{ unit }}0 encapsulation ethernet-vpls
+set interfaces lt-0/0/0 unit {{ unit }}0 peer-unit {{ unit }}1
+set routing-instances interconnect interface lt-0/0/0.{{ unit }}0
+      {% if zz.hostname == "root" %}
+
+set interfaces lt-0/0/0 unit {{ unit }}1 description "to-interconnect"
+set interfaces lt-0/0/0 unit {{ unit }}1 encapsulation ethernet
+set interfaces lt-0/0/0 unit {{ unit }}1 peer-unit {{ unit }}0
+set interfaces lt-0/0/0 unit {{ unit }}1 family inet address 10.0.1.{{ unit }}/24
+set security zones security-zone trust interfaces lt-0/0/0.{{ unit }}1
+set protocols ospf area 0.0.0.0 interface lt-0/0/0.{{ unit }}1
+      {% else %}
+
+set interfaces lt-0/0/0 unit {{ unit }}1 description "{{ zz.hostname }}-untrust-to-interconnect"
+set interfaces lt-0/0/0 unit {{ unit }}1 encapsulation ethernet
+set interfaces lt-0/0/0 unit {{ unit }}1 peer-unit {{ unit }}0
+set interfaces lt-0/0/0 unit {{ unit }}1 family inet address 10.0.1.{{ unit }}/24
+set tenants {{ zz.hostname }} security zones security-zone untrust interfaces lt-0/0/0.{{ unit }}1
+set tenants {{ zz.hostname }} routing-instances {{ zz.hostname }}-main interface lt-0/0/0.{{ unit }}1
+set tenants {{ zz.hostname }} routing-instances {{ zz.hostname }}-main protocols ospf area 0.0.0.0 interface lt-0/0/0.{{ unit }}1
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+

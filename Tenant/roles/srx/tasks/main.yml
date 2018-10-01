@@ -1,0 +1,3 @@
+---
+- name: Generate SRX LSYS configuration file
+  template: src=router.j2 dest="{{playbook_dir}}/Configs/srx.set"

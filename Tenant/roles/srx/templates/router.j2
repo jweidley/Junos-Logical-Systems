@@ -1,0 +1,89 @@
+set system security-profile bronze policy maximum 500
+set system security-profile bronze policy reserved 100
+set system security-profile bronze zone maximum 50
+set system security-profile bronze zone reserved 10
+set system security-profile bronze flow-session maximum 1000
+set system security-profile bronze flow-session reserved 500
+set system security-profile bronze nat-source-pool maximum 50
+set system security-profile bronze nat-source-pool reserved 10
+set system security-profile bronze nat-pat-address maximum 50
+set system security-profile bronze nat-pat-address reserved 10
+set system security-profile bronze nat-source-rule maximum 50
+set system security-profile bronze nat-source-rule reserved 10
+set system security-profile bronze nat-rule-referenced-prefix maximum 20
+set system security-profile bronze nat-rule-referenced-prefix reserved 10
+
+{% for zz in lsys_members %}
+
+set system login class tenant1-admin tenant {{ zz.hostname }}
+
+set system login class {{ zz.hostname }}-admin tenant {{ zz.hostname }}
+set system login class {{ zz.hostname }}-admin permissions all
+set system login class {{ zz.hostname }}-admin deny-commands "(telnet)|(traceroute)|(ssh)|(show log)"
+set system login user {{ zz.hostname }}-admin class {{ zz.hostname }}-admin
+set system login user {{ zz.hostname }}-admin authentication encrypted-password "{{ tenant_passwd }}"
+
+
+set interfaces {{ zz.untrust_int }} vlan-tagging
+set interfaces {{ zz.trust_int }} vlan-tagging
+
+set interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} description {{ zz.hostname }}-untrust
+set interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} vlan-id {{ zz.untrust_vlan }} 
+set interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} family inet address {{ zz.untrust_int_ip }}/{{ zz.untrust_int_mask }} 
+
+set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} description {{ zz.hostname }}-trust
+set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} vlan-id {{ zz.trust_vlan }}
+set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} family inet address {{ zz.trust_int_ip }}/{{ zz.trust_int_mask }}
+
+set tenants {{ zz.hostname }}
+set tenants {{ zz.hostname }} routing-instances {{ zz.hostname }}-main instance-type virtual-router
+set tenants {{ zz.hostname }} routing-instances {{ zz.hostname }}-main interface {{ zz.untrust_int }}.{{ zz.untrust_vlan }}
+set tenants {{ zz.hostname }} routing-instances {{ zz.hostname }}-main interface {{ zz.trust_int }}.{{ zz.trust_vlan }}
+set tenants {{ zz.hostname }} routing-instances {{ zz.hostname }}-main routing-options static route 0.0.0.0/0 next-hop {{ zz.default_gateway }}
+
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens icmp fragment
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens icmp large
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens icmp flood
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens icmp ping-death
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens ip spoofing
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens ip unknown-protocol
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens tcp syn-fin
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens tcp tcp-no-flag
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens tcp syn-frag
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens tcp land
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens tcp winnuke
+set tenants {{ zz.hostname }} security screen ids-option baseline-screens udp flood
+
+set tenants {{ zz.hostname }} security zones security-zone untrust screen baseline-screens
+set tenants {{ zz.hostname }} security zones security-zone untrust host-inbound-traffic system-services ssh
+set tenants {{ zz.hostname }} security zones security-zone untrust host-inbound-traffic system-services ping
+set tenants {{ zz.hostname }} security zones security-zone untrust host-inbound-traffic system-services traceroute
+set tenants {{ zz.hostname }} security zones security-zone untrust interfaces {{ zz.untrust_int }}.{{ zz.untrust_vlan }}
+
+set tenants {{ zz.hostname }} security zones security-zone trust screen baseline-screens
+set tenants {{ zz.hostname }} security zones security-zone trust host-inbound-traffic system-services ssh
+set tenants {{ zz.hostname }} security zones security-zone trust host-inbound-traffic system-services ping
+set tenants {{ zz.hostname }} security zones security-zone trust host-inbound-traffic system-services traceroute
+set tenants {{ zz.hostname }} security zones security-zone trust interfaces {{ zz.trust_int }}.{{ zz.trust_vlan }}
+
+set tenants {{ zz.hostname }} security policies from-zone trust to-zone untrust policy 1 match source-address any
+set tenants {{ zz.hostname }} security policies from-zone trust to-zone untrust policy 1 match destination-address any
+set tenants {{ zz.hostname }} security policies from-zone trust to-zone untrust policy 1 match application any
+set tenants {{ zz.hostname }} security policies from-zone trust to-zone untrust policy 1 then permit
+
+set tenants {{ zz.hostname }} security policies from-zone untrust to-zone trust policy 2 match source-address any
+set tenants {{ zz.hostname }} security policies from-zone untrust to-zone trust policy 2 match destination-address any
+set tenants {{ zz.hostname }} security policies from-zone untrust to-zone trust policy 2 match application any
+set tenants {{ zz.hostname }} security policies from-zone untrust to-zone trust policy 2 then permit
+
+set tenants {{ zz.hostname }} security policies default-policy deny-all
+set tenants {{ zz.hostname }} security policies policy-rematch
+
+set tenants {{ zz.hostname }} security policies global policy deny-log match source-address any
+set tenants {{ zz.hostname }} security policies global policy deny-log match destination-address any
+set tenants {{ zz.hostname }} security policies global policy deny-log match application any
+set tenants {{ zz.hostname }} security policies global policy deny-log then deny
+set tenants {{ zz.hostname }} security policies global policy deny-log then log session-init
+set tenants {{ zz.hostname }} security policies global policy deny-log then log session-close
+
+{% endfor %}
