@@ -3,7 +3,7 @@
 # Common Settings:
 #######################################################################################
 # The default password for the created tenant admin accounts
-tenant_admin_passwd: $6$jRdj1B8I$tkux7Cn0gTSJchiZoc2q.ZVWNC97YHfU7sFJDiEiqFVD6SQX8QnqMFrgEtU.0E62.U8F7UZS2n/o5oFbg5qhF/
+tenant_admin_passwd: $6$jRdj1B8I$tkux7Cn0gTSJchiZoc2q.ZVWNC97YHfU7DiEiqFVD6SQXaaaa8QnqMU.0E62.U8F7UZS2n/o5oFbg5qhF
 
 #######################################################################################
 # lsys_members:
