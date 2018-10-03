@@ -1,7 +1,6 @@
 
 {% for zz in int_interfaces %}
 set interfaces {{ zz.interface }} vlan-tagging
-set interfaces {{ zz.interface }} mtu 1522
 set interfaces {{ zz.interface }} unit {{ zz.user_vlan }} description {{zz.peer}}-trust
 set interfaces {{ zz.interface }} unit {{ zz.user_vlan }} vlan-id {{ zz.user_vlan }}
 set interfaces {{ zz.interface }} unit {{ zz.user_vlan }} family inet address {{ zz.user_int_net }}/{{ zz.user_int_mask }}

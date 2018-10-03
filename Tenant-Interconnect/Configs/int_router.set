@@ -1,0 +1,19 @@
+
+set interfaces ge-0/0/13 vlan-tagging
+set interfaces ge-0/0/13 mtu 1522
+set interfaces ge-0/0/13 unit 210 description t1-trust
+set interfaces ge-0/0/13 unit 210 vlan-id 210
+set interfaces ge-0/0/13 unit 210 family inet address 172.16.210.1/24
+set routing-instances t1-trust instance-type virtual-router
+set routing-instances t1-trust interface ge-0/0/13.210
+set routing-instances t1-trust routing-options static route 0.0.0.0/0 next-hop 172.16.210.2
+
+set interfaces ge-0/0/13 vlan-tagging
+set interfaces ge-0/0/13 mtu 1522
+set interfaces ge-0/0/13 unit 220 description t2-trust
+set interfaces ge-0/0/13 unit 220 vlan-id 220
+set interfaces ge-0/0/13 unit 220 family inet address 172.16.220.1/24
+set routing-instances t2-trust instance-type virtual-router
+set routing-instances t2-trust interface ge-0/0/13.220
+set routing-instances t2-trust routing-options static route 0.0.0.0/0 next-hop 172.16.220.2
+

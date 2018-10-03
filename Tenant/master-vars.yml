@@ -2,7 +2,8 @@
 #######################################################################################
 # Common Settings:
 #######################################################################################
-tenant_passwd: $6$KhAyMHas$5MEgjhJp36.VdzAyQZSmd0A/PWlBTAhDGQVmpNK2rR7jFw3JMjJLyeyRmESdzAyQZSmdGEZJ1iZYn.WR.
+# The default password for the created tenant admin accounts
+tenant_admin_passwd: $6$KhAyMHas$5MEgjhJp36.VdzAyQZSmd0A/PWlBTAhDGQVmpNK2rR7jFw3JMjJLyeyRmESdzAyQZSmdGEZJ1iZYn.WR.
 
 #######################################################################################
 # lsys_members:
@@ -44,13 +45,13 @@ lsys_members:
     }
 
 #######################################################################################
+# ext_interfaces:
 #	Options are:
 #	- peer: Name of the Tenant
 #	- interface: Physical interface on the router/switch connecting to the SRX
-#	- user_int_net: VLAN tag for the interface
+#	- user_vlan: VLAN tag for the interface
 #	- user_int_net: IP address for the connection to the SRX
 #	- user_int_mask: Netmask for the connection to the SRX
-#	- default_gateway: Default gateway for the routing instance (should point to SRX)
 #######################################################################################
 ext_interfaces:
   - { peer: t1, 
@@ -58,16 +59,40 @@ ext_interfaces:
       user_vlan: 50,
       user_int_net: 192.168.50.1, 
       user_int_mask: 29,
-      default_gateway: 192.168.50.2
     }
   - { peer: t2, 
       interface: ge-0/0/12,
       user_vlan: 60,
       user_int_net: 192.168.60.1, 
       user_int_mask: 29,
-      default_gateway: 192.168.60.2
     }
 
+#######################################################################################
+# ext_statics:
+#       This variable is for creating static routes in the untrust routing instance
+#       so it knows how to reach the internal network inside the tenants.
+#	Options are:
+#	- user_net: IP address of trusted tenant network
+#       - next_hop: The untrust tenant IP address for that network
+#######################################################################################
+ext_statics:
+  - { user_net: 172.16.150.0/24,
+      next_hop: 192.168.50.2
+    }
+  - { user_net: 172.16.160.0/24,
+      next_hop: 192.168.60.2
+    }
+
+#######################################################################################
+# int_interfaces:
+#	Options are:
+#	- peer: Name of the Tenant
+#	- interface: Physical interface on the router/switch connecting to the SRX
+#	- user_vlan: VLAN tag for the interface
+#	- user_int_net: IP address for the connection to the SRX
+#	- user_int_mask: Netmask for the connection to the SRX
+#	- default_gateway: Default gateway for the routing instance (should point to SRX)
+#######################################################################################
 int_interfaces:
   - { peer: t1, 
       interface: ge-0/0/13,
@@ -84,4 +109,4 @@ int_interfaces:
       default_gateway: 172.16.160.2
     }
 
-
+## end of file ##

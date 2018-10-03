@@ -21,7 +21,7 @@ set system login class {{ zz.hostname }}-admin tenant {{ zz.hostname }}
 set system login class {{ zz.hostname }}-admin permissions all
 set system login class {{ zz.hostname }}-admin deny-commands "(telnet)|(traceroute)|(ssh)|(show log)"
 set system login user {{ zz.hostname }}-admin class {{ zz.hostname }}-admin
-set system login user {{ zz.hostname }}-admin authentication encrypted-password "{{ tenant_passwd }}"
+set system login user {{ zz.hostname }}-admin authentication encrypted-password "{{ tenant_admin_passwd }}"
 
 
 set interfaces {{ zz.untrust_int }} vlan-tagging
@@ -58,12 +58,14 @@ set tenants {{ zz.hostname }} security zones security-zone untrust screen baseli
 set tenants {{ zz.hostname }} security zones security-zone untrust host-inbound-traffic system-services ssh
 set tenants {{ zz.hostname }} security zones security-zone untrust host-inbound-traffic system-services ping
 set tenants {{ zz.hostname }} security zones security-zone untrust host-inbound-traffic system-services traceroute
+set tenants {{ zz.hostname }} security zones security-zone untrust host-inbound-traffic protocols ospf
 set tenants {{ zz.hostname }} security zones security-zone untrust interfaces {{ zz.untrust_int }}.{{ zz.untrust_vlan }}
 
 set tenants {{ zz.hostname }} security zones security-zone trust screen baseline-screens
 set tenants {{ zz.hostname }} security zones security-zone trust host-inbound-traffic system-services ssh
 set tenants {{ zz.hostname }} security zones security-zone trust host-inbound-traffic system-services ping
 set tenants {{ zz.hostname }} security zones security-zone trust host-inbound-traffic system-services traceroute
+set tenants {{ zz.hostname }} security zones security-zone trust host-inbound-traffic protocols ospf
 set tenants {{ zz.hostname }} security zones security-zone trust interfaces {{ zz.trust_int }}.{{ zz.trust_vlan }}
 
 set tenants {{ zz.hostname }} security policies from-zone trust to-zone untrust policy 1 match source-address any

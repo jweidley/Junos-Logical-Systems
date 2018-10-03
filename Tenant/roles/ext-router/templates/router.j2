@@ -1,12 +1,13 @@
 
 {% for zz in ext_interfaces %}
 set interfaces {{ zz.interface }} vlan-tagging
-set interfaces {{ zz.interface }} mtu 1522
 set interfaces {{ zz.interface }} unit {{ zz.user_vlan }} description {{zz.peer}}-untrust
 set interfaces {{ zz.interface }} unit {{ zz.user_vlan }} vlan-id {{ zz.user_vlan }}
 set interfaces {{ zz.interface }} unit {{ zz.user_vlan }} family inet address {{ zz.user_int_net }}/{{ zz.user_int_mask }}
-set routing-instances {{ zz.peer }}-untrust instance-type virtual-router
-set routing-instances {{ zz.peer }}-untrust interface {{ zz.interface }}.{{ zz.user_vlan }}
-set routing-instances {{ zz.peer }}-untrust routing-options static route 0.0.0.0/0 next-hop {{ zz.default_gateway}}
+set routing-instances tenant-untrust instance-type virtual-router
+set routing-instances tenant-untrust interface {{ zz.interface }}.{{ zz.user_vlan }}
+{% endfor %}
 
+{% for route in ext_statics %}
+set routing-instance tetnant-untrust routing-options static route {{ route.user_net }} next-hop {{ route.next_hop }}
 {% endfor %}

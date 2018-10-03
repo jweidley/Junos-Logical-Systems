@@ -33,9 +33,9 @@ set system login class {{ zz.hostname }}-admin tenant {{ zz.hostname }}
 set system login class {{ zz.hostname }}-admin permissions all
 set system login class {{ zz.hostname }}-admin deny-commands "(telnet)|(traceroute)|(ssh)|(show log)"
 set system login user {{ zz.hostname }}-admin class {{ zz.hostname }}-admin
-set system login user {{ zz.hostname }}-admin authentication encrypted-password "{{ tenant_passwd }}"
-
+set system login user {{ zz.hostname }}-admin authentication encrypted-password "{{ tenant_admin_passwd }}"
 set system login class tenant1-admin tenant {{ zz.hostname }}
+set system security-profile bronze tenant {{ zz.hostname }}
 
 set interfaces {{ zz.trust_int }} vlan-tagging
 set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} description {{ zz.hostname }}-trust
