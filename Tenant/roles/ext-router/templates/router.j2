@@ -9,5 +9,5 @@ set routing-instances tenant-untrust interface {{ zz.interface }}.{{ zz.user_vla
 {% endfor %}
 
 {% for route in ext_statics %}
-set routing-instances tetnant-untrust routing-options static route {{ route.user_net }} next-hop {{ route.next_hop }}
+set routing-instances tenant-untrust routing-options static route {{ route.user_net }} next-hop {{ route.next_hop }}
 {% endfor %}
