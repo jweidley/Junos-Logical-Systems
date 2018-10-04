@@ -23,6 +23,7 @@ set system login class {{ zz.hostname }}-admin deny-commands "(telnet)|(tracerou
 set system login user {{ zz.hostname }}-admin class {{ zz.hostname }}-admin
 set system login user {{ zz.hostname }}-admin authentication encrypted-password "{{ tenant_admin_passwd }}"
 
+set system security-profile bronze tenant {{ zz.hostname }}
 
 set interfaces {{ zz.untrust_int }} vlan-tagging
 set interfaces {{ zz.trust_int }} vlan-tagging
