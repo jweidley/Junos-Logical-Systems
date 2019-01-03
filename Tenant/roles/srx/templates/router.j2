@@ -14,7 +14,6 @@ set system security-profile bronze nat-rule-referenced-prefix maximum 20
 set system security-profile bronze nat-rule-referenced-prefix reserved 10
 
 {% for zz in lsys_members %}
-
 set system login class tenant1-admin tenant {{ zz.hostname }}
 
 set system login class {{ zz.hostname }}-admin tenant {{ zz.hostname }}
@@ -28,13 +27,13 @@ set system security-profile bronze tenant {{ zz.hostname }}
 set interfaces {{ zz.untrust_int }} vlan-tagging
 set interfaces {{ zz.trust_int }} vlan-tagging
 
-set interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} description {{ zz.hostname }}-untrust
-set interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} vlan-id {{ zz.untrust_vlan }} 
-set interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} family inet address {{ zz.untrust_int_ip }}/{{ zz.untrust_int_mask }} 
+set tenants {{ zz.hostname }} interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} description {{ zz.hostname }}-untrust
+set tenants {{ zz.hostname }} interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} vlan-id {{ zz.untrust_vlan }} 
+set tenants {{ zz.hostname }} interfaces {{ zz.untrust_int }} unit {{ zz.untrust_vlan }} family inet address {{ zz.untrust_int_ip }}/{{ zz.untrust_int_mask }} 
 
-set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} description {{ zz.hostname }}-trust
-set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} vlan-id {{ zz.trust_vlan }}
-set interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} family inet address {{ zz.trust_int_ip }}/{{ zz.trust_int_mask }}
+set tenants {{ zz.hostname }} interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} description {{ zz.hostname }}-trust
+set tenants {{ zz.hostname }} interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} vlan-id {{ zz.trust_vlan }}
+set tenants {{ zz.hostname }} interfaces {{ zz.trust_int }} unit {{ zz.trust_vlan }} family inet address {{ zz.trust_int_ip }}/{{ zz.trust_int_mask }}
 
 set tenants {{ zz.hostname }}
 set tenants {{ zz.hostname }} routing-instances {{ zz.hostname }}-main instance-type virtual-router
